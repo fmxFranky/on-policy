@@ -1,26 +1,30 @@
 #!/usr/bin/env python
-import sys
 import os
-import wandb
 import socket
-import setproctitle
-import numpy as np
+import sys
 from pathlib import Path
-import torch
-from onpolicy.config import get_config
-from onpolicy.envs.starcraft2.StarCraft2_Env import StarCraft2Env
-from onpolicy.envs.starcraft2.smac_maps import get_map_params
-from onpolicy.envs.env_wrappers import ShareSubprocVecEnv, ShareDummyVecEnv
 
+import numpy as np
+import setproctitle
+import torch
+import wandb
+from onpolicy.config import get_config
+from onpolicy.envs.env_wrappers import ShareDummyVecEnv, ShareSubprocVecEnv
+from onpolicy.envs.starcraft2.smac_maps import get_map_params
+from onpolicy.envs.starcraft2.StarCraft2_Env import StarCraft2Env
 """Train script for SMAC."""
 
+
 def make_train_env(all_args):
+
     def get_env_fn(rank):
+
         def init_env():
             if all_args.env_name == "StarCraft2":
                 env = StarCraft2Env(all_args)
             else:
-                print("Can not support the " + all_args.env_name + "environment.")
+                print("Can not support the " + all_args.env_name +
+                      "environment.")
                 raise NotImplementedError
             env.seed(all_args.seed + rank * 1000)
             return env
@@ -30,16 +34,20 @@ def make_train_env(all_args):
     if all_args.n_rollout_threads == 1:
         return ShareDummyVecEnv([get_env_fn(0)])
     else:
-        return ShareSubprocVecEnv([get_env_fn(i) for i in range(all_args.n_rollout_threads)])
+        return ShareSubprocVecEnv(
+            [get_env_fn(i) for i in range(all_args.n_rollout_threads)])
 
 
 def make_eval_env(all_args):
+
     def get_env_fn(rank):
+
         def init_env():
             if all_args.env_name == "StarCraft2":
                 env = StarCraft2Env(all_args)
             else:
-                print("Can not support the " + all_args.env_name + "environment.")
+                print("Can not support the " + all_args.env_name +
+                      "environment.")
                 raise NotImplementedError
             env.seed(all_args.seed * 50000 + rank * 10000)
             return env
@@ -49,18 +57,27 @@ def make_eval_env(all_args):
     if all_args.n_eval_rollout_threads == 1:
         return ShareDummyVecEnv([get_env_fn(0)])
     else:
-        return ShareSubprocVecEnv([get_env_fn(i) for i in range(all_args.n_eval_rollout_threads)])
+        return ShareSubprocVecEnv(
+            [get_env_fn(i) for i in range(all_args.n_eval_rollout_threads)])
 
 
 def parse_args(args, parser):
-    parser.add_argument('--map_name', type=str, default='3m',
+    parser.add_argument('--map_name',
+                        type=str,
+                        default='3m',
                         help="Which smac map to run on")
     parser.add_argument("--add_move_state", action='store_true', default=False)
     parser.add_argument("--add_local_obs", action='store_true', default=False)
-    parser.add_argument("--add_distance_state", action='store_true', default=False)
-    parser.add_argument("--add_enemy_action_state", action='store_true', default=False)
+    parser.add_argument("--add_distance_state",
+                        action='store_true',
+                        default=False)
+    parser.add_argument("--add_enemy_action_state",
+                        action='store_true',
+                        default=False)
     parser.add_argument("--add_agent_id", action='store_true', default=False)
-    parser.add_argument("--add_visible_state", action='store_true', default=False)
+    parser.add_argument("--add_visible_state",
+                        action='store_true',
+                        default=False)
     parser.add_argument("--add_xy_state", action='store_true', default=False)
     parser.add_argument("--use_state_agent", action='store_true', default=False)
     parser.add_argument("--use_mustalive", action='store_false', default=True)
@@ -76,10 +93,13 @@ def main(args):
     all_args = parse_args(args, parser)
 
     if all_args.algorithm_name == "rmappo":
-        assert (all_args.use_recurrent_policy or all_args.use_naive_recurrent_policy), ("check recurrent policy!")
+        assert (all_args.use_recurrent_policy or
+                all_args.use_naive_recurrent_policy), (
+                    "check recurrent policy!")
     elif all_args.algorithm_name == "mappo":
-        assert (all_args.use_recurrent_policy == False and all_args.use_naive_recurrent_policy == False), (
-            "check recurrent policy!")
+        assert (all_args.use_recurrent_policy == False and
+                all_args.use_naive_recurrent_policy
+                == False), ("check recurrent policy!")
     else:
         raise NotImplementedError
 
@@ -96,8 +116,10 @@ def main(args):
         device = torch.device("cpu")
         torch.set_num_threads(all_args.n_training_threads)
 
-    run_dir = Path(os.path.split(os.path.dirname(os.path.abspath(__file__)))[
-                       0] + "/results") / all_args.env_name / all_args.map_name / all_args.algorithm_name / all_args.experiment_name
+    run_dir = Path(
+        os.path.split(os.path.dirname(os.path.abspath(__file__)))[0] +
+        "/results"
+    ) / all_args.env_name / all_args.map_name / all_args.algorithm_name / all_args.experiment_name
     if not run_dir.exists():
         os.makedirs(str(run_dir))
 
@@ -107,8 +129,8 @@ def main(args):
                          entity=all_args.user_name,
                          notes=socket.gethostname(),
                          name=str(all_args.algorithm_name) + "_" +
-                              str(all_args.experiment_name) +
-                              "_seed" + str(all_args.seed),
+                         str(all_args.experiment_name) + "_seed" +
+                         str(all_args.seed),
                          group=all_args.map_name,
                          dir=str(run_dir),
                          job_type="training",
@@ -117,8 +139,11 @@ def main(args):
         if not run_dir.exists():
             curr_run = 'run1'
         else:
-            exst_run_nums = [int(str(folder.name).split('run')[1]) for folder in run_dir.iterdir() if
-                             str(folder.name).startswith('run')]
+            exst_run_nums = [
+                int(str(folder.name).split('run')[1])
+                for folder in run_dir.iterdir()
+                if str(folder.name).startswith('run')
+            ]
             if len(exst_run_nums) == 0:
                 curr_run = 'run1'
             else:
@@ -128,8 +153,8 @@ def main(args):
             os.makedirs(str(run_dir))
 
     setproctitle.setproctitle(
-        str(all_args.algorithm_name) + "-" + str(all_args.env_name) + "-" + str(all_args.experiment_name) + "@" + str(
-            all_args.user_name))
+        str(all_args.algorithm_name) + "-" + str(all_args.env_name) + "-" +
+        str(all_args.experiment_name) + "@" + str(all_args.user_name))
 
     # seed
     torch.manual_seed(all_args.seed)
@@ -167,7 +192,8 @@ def main(args):
     if all_args.use_wandb:
         run.finish()
     else:
-        runner.writter.export_scalars_to_json(str(runner.log_dir + '/summary.json'))
+        runner.writter.export_scalars_to_json(
+            str(runner.log_dir + '/summary.json'))
         runner.writter.close()
 
 

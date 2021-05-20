@@ -1,9 +1,11 @@
 import numpy as np
-from onpolicy.envs.mpe.core import World, Agent, Landmark
+
+from onpolicy.envs.mpe.core import Agent, Landmark, World
 from onpolicy.envs.mpe.scenario import BaseScenario
 
 
 class Scenario(BaseScenario):
+
     def make_world(self, args):
         world = World()
         # set any world properties first
@@ -94,4 +96,5 @@ class Scenario(BaseScenario):
             if other is agent:
                 continue
             comm.append(other.state.c)
-        return np.concatenate([agent.state.p_vel] + entity_pos + [goal_color[1]] + comm)
+        return np.concatenate([agent.state.p_vel] + entity_pos +
+                              [goal_color[1]] + comm)

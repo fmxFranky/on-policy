@@ -10,18 +10,17 @@ def _t2n(x):
     return x.detach().cpu().numpy()
 
 
-class MPERunner(Runner):
+class InventoryRunner(Runner):
     """Runner class to perform training, evaluation. and data collection for the MPEs. See parent class for details."""
-
     def __init__(self, config):
-        super(MPERunner, self).__init__(config)
+        super(InventoryRunner, self).__init__(config)
 
     def run(self):
         self.warmup()
 
         start = time.time()
-        episodes = int(
-            self.num_env_steps) // self.episode_length // self.n_rollout_threads
+        episodes = int(self.num_env_steps
+                       ) // self.episode_length // self.n_rollout_threads
 
         for episode in range(episodes):
             if self.use_linear_lr_decay:
@@ -33,6 +32,7 @@ class MPERunner(Runner):
                     step)
 
                 # Obser reward and next obs
+
                 obs, rewards, dones, infos = self.envs.step(actions_env)
                 data = obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic
 
@@ -44,8 +44,8 @@ class MPERunner(Runner):
             train_infos = self.train()
 
             # post process
-            total_num_steps = (episode +
-                               1) * self.episode_length * self.n_rollout_threads
+            total_num_steps = (
+                episode + 1) * self.episode_length * self.n_rollout_threads
 
             # save model
             if (episode % self.save_interval == 0 or episode == episodes - 1):
@@ -61,23 +61,23 @@ class MPERunner(Runner):
                             total_num_steps, self.num_env_steps,
                             int(total_num_steps / (end - start))))
 
-                if self.env_name == "MPE":
-                    env_infos = {}
-                    for agent_id in range(self.num_agents):
-                        idv_rews = []
-                        for info in infos:
-                            if 'individual_reward' in info[agent_id].keys():
-                                idv_rews.append(
-                                    info[agent_id]['individual_reward'])
-                        agent_k = 'agent%i/individual_rewards' % agent_id
-                        env_infos[agent_k] = idv_rews
+                # if self.env_name == "MPE":
+                #     env_infos = {}
+                #     for agent_id in range(self.num_agents):
+                #         idv_rews = []
+                #         for info in infos:
+                #             if 'individual_reward' in info[agent_id].keys():
+                #                 idv_rews.append(
+                #                     info[agent_id]['individual_reward'])
+                #         agent_k = 'agent%i/individual_rewards' % agent_id
+                #         env_infos[agent_k] = idv_rews
 
                 train_infos["average_episode_rewards"] = np.mean(
                     self.buffer.rewards) * self.episode_length
                 print("average episode rewards is {}".format(
                     train_infos["average_episode_rewards"]))
                 self.log_train(train_infos, total_num_steps)
-                self.log_env(env_infos, total_num_steps)
+                # self.log_env(env_infos, total_num_steps)
 
             # eval
             if episode % self.eval_interval == 0 and self.use_eval:
@@ -112,8 +112,8 @@ class MPERunner(Runner):
         actions = np.array(np.split(_t2n(action), self.n_rollout_threads))
         action_log_probs = np.array(
             np.split(_t2n(action_log_prob), self.n_rollout_threads))
-        rnn_states = np.array(np.split(_t2n(rnn_states),
-                                       self.n_rollout_threads))
+        rnn_states = np.array(
+            np.split(_t2n(rnn_states), self.n_rollout_threads))
         rnn_states_critic = np.array(
             np.split(_t2n(rnn_states_critic), self.n_rollout_threads))
         # rearrange action
@@ -127,8 +127,9 @@ class MPERunner(Runner):
                     actions_env = np.concatenate((actions_env, uc_actions_env),
                                                  axis=2)
         elif self.envs.action_space[0].__class__.__name__ == 'Discrete':
-            actions_env = np.squeeze(
-                np.eye(self.envs.action_space[0].n)[actions], 2)
+            # actions_env = np.squeeze(
+            #     np.eye(self.envs.action_space[0].n)[actions], 2)
+            actions_env = np.squeeze(actions, 2)
         else:
             raise NotImplementedError
 
@@ -194,8 +195,9 @@ class MPERunner(Runner):
                             (eval_actions_env, eval_uc_actions_env), axis=2)
             elif self.eval_envs.action_space[
                     0].__class__.__name__ == 'Discrete':
-                eval_actions_env = np.squeeze(
-                    np.eye(self.eval_envs.action_space[0].n)[eval_actions], 2)
+                # eval_actions_env = np.squeeze(
+                #     np.eye(self.eval_envs.action_space[0].n)[eval_actions], 2)
+                eval_actions_env = np.squeeze(eval_actions, 2)
             else:
                 raise NotImplementedError
 
@@ -219,7 +221,7 @@ class MPERunner(Runner):
         eval_env_infos['eval_average_episode_rewards'] = np.sum(
             np.array(eval_episode_rewards), axis=0)
         print("eval average episode rewards of agent: " +
-              str(eval_average_episode_rewards))
+              str(np.sum(eval_episode_rewards)))
         self.log_env(eval_env_infos, total_num_steps)
 
     @torch.no_grad()
@@ -276,7 +278,8 @@ class MPERunner(Runner):
                 episode_rewards.append(rewards)
 
                 rnn_states[dones == True] = np.zeros(
-                    ((dones == True).sum(), self.recurrent_N, self.hidden_size),
+                    ((dones
+                      == True).sum(), self.recurrent_N, self.hidden_size),
                     dtype=np.float32)
                 masks = np.ones((self.n_rollout_threads, self.num_agents, 1),
                                 dtype=np.float32)

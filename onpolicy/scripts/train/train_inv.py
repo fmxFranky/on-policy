@@ -9,9 +9,11 @@ import setproctitle
 import torch
 import wandb
 from onpolicy.config import get_config
-from onpolicy.envs.env_wrappers import ChooseDummyVecEnv, ChooseSubprocVecEnv
-from onpolicy.envs.hanabi.Hanabi_Env import HanabiEnv
-"""Train script for Hanabi."""
+from onpolicy.envs.env_wrappers import DummyVecEnv, SubprocVecEnv
+from onpolicy.envs.replenishment.env_wrapper import MyInventoryManageEnv
+from onpolicy.runner.shared.inventory_runner import InventoryRunner as Runner
+
+"""Train script for MPEs."""
 
 
 def make_train_env(all_args):
@@ -19,10 +21,8 @@ def make_train_env(all_args):
     def get_env_fn(rank):
 
         def init_env():
-            if all_args.env_name == "Hanabi":
-                assert all_args.num_agents > 1 and all_args.num_agents < 6, (
-                    "num_agents can be only between 2-5.")
-                env = HanabiEnv(all_args, (all_args.seed + rank * 1000))
+            if all_args.env_name == "IM":
+                env = MyInventoryManageEnv()
             else:
                 print("Can not support the " + all_args.env_name +
                       "environment.")
@@ -33,9 +33,9 @@ def make_train_env(all_args):
         return init_env
 
     if all_args.n_rollout_threads == 1:
-        return ChooseDummyVecEnv([get_env_fn(0)])
+        return DummyVecEnv([get_env_fn(0)])
     else:
-        return ChooseSubprocVecEnv(
+        return SubprocVecEnv(
             [get_env_fn(i) for i in range(all_args.n_rollout_threads)])
 
 
@@ -44,11 +44,8 @@ def make_eval_env(all_args):
     def get_env_fn(rank):
 
         def init_env():
-            if all_args.env_name == "Hanabi":
-                assert all_args.num_agents > 1 and all_args.num_agents < 6, (
-                    "num_agents can be only between 2-5.")
-                env = HanabiEnv(all_args,
-                                (all_args.seed * 50000 + rank * 10000))
+            if all_args.env_name == "IM":
+                env = MyInventoryManageEnv()
             else:
                 print("Can not support the " + all_args.env_name +
                       "environment.")
@@ -59,17 +56,18 @@ def make_eval_env(all_args):
         return init_env
 
     if all_args.n_eval_rollout_threads == 1:
-        return ChooseDummyVecEnv([get_env_fn(0)])
+        return DummyVecEnv([get_env_fn(0)])
     else:
-        return ChooseSubprocVecEnv(
+        return SubprocVecEnv(
             [get_env_fn(i) for i in range(all_args.n_eval_rollout_threads)])
 
 
 def parse_args(args, parser):
-    parser.add_argument('--hanabi_name',
+    parser.add_argument('--scenario_name',
                         type=str,
-                        default='Hanabi-Very-Small',
-                        help="Which env to run on")
+                        default='simple_spread',
+                        help="Which scenario to run on")
+    parser.add_argument("--num_landmarks", type=int, default=3)
     parser.add_argument('--num_agents',
                         type=int,
                         default=2,
@@ -95,6 +93,13 @@ def main(args):
     else:
         raise NotImplementedError
 
+    # assert (
+    #     all_args.share_policy == True and
+    #     all_args.scenario_name == 'simple_speaker_listener'
+    # ) == False, (
+    #     "The simple_speaker_listener scenario can not use shared policy. Please check the config.py."
+    # )
+
     # cuda
     if all_args.cuda and torch.cuda.is_available():
         print("choose to use gpu...")
@@ -112,7 +117,7 @@ def main(args):
     run_dir = Path(
         os.path.split(os.path.dirname(os.path.abspath(__file__)))[0] +
         "/results"
-    ) / all_args.env_name / all_args.hanabi_name / all_args.algorithm_name / all_args.experiment_name
+    ) / all_args.env_name / all_args.scenario_name / all_args.algorithm_name / all_args.experiment_name
     if not run_dir.exists():
         os.makedirs(str(run_dir))
 
@@ -125,7 +130,7 @@ def main(args):
                          name=str(all_args.algorithm_name) + "_" +
                          str(all_args.experiment_name) + "_seed" +
                          str(all_args.seed),
-                         group=all_args.hanabi_name,
+                         group=all_args.scenario_name,
                          dir=str(run_dir),
                          job_type="training",
                          reinit=True)
@@ -146,9 +151,8 @@ def main(args):
         if not run_dir.exists():
             os.makedirs(str(run_dir))
 
-    setproctitle.setproctitle(
-        str(all_args.algorithm_name) + "-" + str(all_args.env_name) + "-" +
-        str(all_args.experiment_name) + "@" + str(all_args.user_name))
+    setproctitle.setproctitle(str(all_args.algorithm_name) + "-" + \
+        str(all_args.env_name) + "-" + str(all_args.experiment_name) + "@" + str(all_args.user_name))
 
     # seed
     torch.manual_seed(all_args.seed)
@@ -170,12 +174,7 @@ def main(args):
     }
 
     # run experiments
-    if all_args.share_policy:
-        from onpolicy.runner.shared.hanabi_runner_forward import \
-            HanabiRunner as Runner
-    else:
-        from onpolicy.runner.separated.hanabi_runner_forward import \
-            HanabiRunner as Runner
+
 
     runner = Runner(config)
     runner.run()
@@ -195,3 +194,4 @@ def main(args):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+

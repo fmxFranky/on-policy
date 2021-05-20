@@ -1,23 +1,29 @@
 import gym
+import numpy as np
 from gym import spaces
 from gym.envs.registration import EnvSpec
-import numpy as np
+
 from .multi_discrete import MultiDiscrete
 
 # update bounds to center around agent
 cam_range = 2
 
+
 # environment for all agents in the multiagent world
 # currently code assumes that no agents will be created/destroyed at runtime!
 class MultiAgentEnv(gym.Env):
-    metadata = {
-        'render.modes': ['human', 'rgb_array']
-    }
+    metadata = {'render.modes': ['human', 'rgb_array']}
 
-    def __init__(self, world, reset_callback=None, reward_callback=None,
-                 observation_callback=None, info_callback=None,
-                 done_callback=None, post_step_callback=None,
-                 shared_viewer=True, discrete_action=True):
+    def __init__(self,
+                 world,
+                 reset_callback=None,
+                 reward_callback=None,
+                 observation_callback=None,
+                 info_callback=None,
+                 done_callback=None,
+                 post_step_callback=None,
+                 shared_viewer=True,
+                 discrete_action=True):
 
         self.world = world
         self.world_length = self.world.world_length
@@ -62,8 +68,10 @@ class MultiAgentEnv(gym.Env):
             if self.discrete_action_space:
                 u_action_space = spaces.Discrete(world.dim_p * 2 + 1)
             else:
-                u_action_space = spaces.Box(
-                    low=-agent.u_range, high=+agent.u_range, shape=(world.dim_p,), dtype=np.float32)  # [-1,1]
+                u_action_space = spaces.Box(low=-agent.u_range,
+                                            high=+agent.u_range,
+                                            shape=(world.dim_p,),
+                                            dtype=np.float32)  # [-1,1]
             if agent.movable:
                 total_action_space.append(u_action_space)
 
@@ -71,8 +79,10 @@ class MultiAgentEnv(gym.Env):
             if self.discrete_action_space:
                 c_action_space = spaces.Discrete(world.dim_c)
             else:
-                c_action_space = spaces.Box(low=0.0, high=1.0, shape=(
-                    world.dim_c,), dtype=np.float32)  # [0,1]
+                c_action_space = spaces.Box(low=0.0,
+                                            high=1.0,
+                                            shape=(world.dim_c,),
+                                            dtype=np.float32)  # [0,1]
             #c_action_space = spaces.Discrete(world.dim_c)
 
             if not agent.silent:
@@ -80,9 +90,13 @@ class MultiAgentEnv(gym.Env):
             # total action space
             if len(total_action_space) > 1:
                 # all action spaces are discrete, so simplify to MultiDiscrete action space
-                if all([isinstance(act_space, spaces.Discrete) for act_space in total_action_space]):
-                    act_space = MultiDiscrete(
-                        [[0, act_space.n-1] for act_space in total_action_space])
+                if all([
+                        isinstance(act_space, spaces.Discrete)
+                        for act_space in total_action_space
+                ]):
+                    act_space = MultiDiscrete([
+                        [0, act_space.n - 1] for act_space in total_action_space
+                    ])
                 else:
                     act_space = spaces.Tuple(total_action_space)
                 self.action_space.append(act_space)
@@ -91,11 +105,18 @@ class MultiAgentEnv(gym.Env):
             # observation space
             obs_dim = len(observation_callback(agent, self.world))
             share_obs_dim += obs_dim
-            self.observation_space.append(spaces.Box(
-                low=-np.inf, high=+np.inf, shape=(obs_dim,), dtype=np.float32))  # [-inf,inf]
+            self.observation_space.append(
+                spaces.Box(low=-np.inf,
+                           high=+np.inf,
+                           shape=(obs_dim,),
+                           dtype=np.float32))  # [-inf,inf]
             agent.action.c = np.zeros(self.world.dim_c)
-        self.share_observation_space = [spaces.Box(
-            low=-np.inf, high=+np.inf, shape=(share_obs_dim,), dtype=np.float32)] * self.n
+        self.share_observation_space = [
+            spaces.Box(low=-np.inf,
+                       high=+np.inf,
+                       shape=(share_obs_dim,),
+                       dtype=np.float32)
+        ] * self.n
         # rendering
         self.shared_viewer = shared_viewer
         if self.shared_viewer:
@@ -197,7 +218,7 @@ class MultiAgentEnv(gym.Env):
             size = action_space.high - action_space.low + 1
             index = 0
             for s in size:
-                act.append(action[index:(index+s)])
+                act.append(action[index:(index + s)])
                 index += s
             action = act
         else:
@@ -234,7 +255,8 @@ class MultiAgentEnv(gym.Env):
                 sensitivity = agent.accel
             agent.action.u *= sensitivity
 
-            if (not agent.silent) and (not isinstance(action_space, MultiDiscrete)):
+            if (not agent.silent) and (not isinstance(action_space,
+                                                      MultiDiscrete)):
                 action[0] = action[0][d:]
             else:
                 action = action[1:]
@@ -278,8 +300,8 @@ class MultiAgentEnv(gym.Env):
                         word = '_'
                     else:
                         word = alphabet[np.argmax(other.state.c)]
-                    message += (other.name + ' to ' +
-                                agent.name + ': ' + word + '   ')
+                    message += (other.name + ' to ' + agent.name + ': ' + word +
+                                '   ')
             print(message)
 
         for i in range(len(self.viewers)):
@@ -319,8 +341,8 @@ class MultiAgentEnv(gym.Env):
                             comm.add_attr(xform)
                             offset = rendering.Transform()
                             comm_size = (entity.size / dim_c)
-                            offset.set_translation(ci * comm_size * 2 -
-                                                   entity.size + comm_size, 0)
+                            offset.set_translation(
+                                ci * comm_size * 2 - entity.size + comm_size, 0)
                             comm.add_attr(offset)
                             entity_comm_geoms.append(comm)
 
@@ -335,8 +357,8 @@ class MultiAgentEnv(gym.Env):
                             comm.add_attr(xform)
                             offset = rendering.Transform()
                             comm_size = (entity.size / dim_c)
-                            offset.set_translation(ci * comm_size * 2 -
-                                                   entity.size + comm_size, 0)
+                            offset.set_translation(
+                                ci * comm_size * 2 - entity.size + comm_size, 0)
                             comm.add_attr(offset)
                             entity_comm_geoms.append(comm)
                 geom.add_attr(xform)
@@ -344,12 +366,14 @@ class MultiAgentEnv(gym.Env):
                 self.render_geoms_xform.append(xform)
                 self.comm_geoms.append(entity_comm_geoms)
             for wall in self.world.walls:
-                corners = ((wall.axis_pos - 0.5 * wall.width, wall.endpoints[0]),
-                           (wall.axis_pos - 0.5 *
-                            wall.width, wall.endpoints[1]),
-                           (wall.axis_pos + 0.5 *
-                            wall.width, wall.endpoints[1]),
-                           (wall.axis_pos + 0.5 * wall.width, wall.endpoints[0]))
+                corners = ((wall.axis_pos - 0.5 * wall.width,
+                            wall.endpoints[0]),
+                           (wall.axis_pos - 0.5 * wall.width,
+                            wall.endpoints[1]),
+                           (wall.axis_pos + 0.5 * wall.width,
+                            wall.endpoints[1]),
+                           (wall.axis_pos + 0.5 * wall.width,
+                            wall.endpoints[0]))
                 if wall.orient == 'H':
                     corners = tuple(c[::-1] for c in corners)
                 geom = rendering.make_polygon(corners)
@@ -381,8 +405,8 @@ class MultiAgentEnv(gym.Env):
                 pos = np.zeros(self.world.dim_p)
             else:
                 pos = self.agents[i].state.p_pos
-            self.viewers[i].set_bounds(
-                pos[0]-cam_range, pos[0]+cam_range, pos[1]-cam_range, pos[1]+cam_range)
+            self.viewers[i].set_bounds(pos[0] - cam_range, pos[0] + cam_range,
+                                       pos[1] - cam_range, pos[1] + cam_range)
             # update geometry positions
             for e, entity in enumerate(self.world.entities):
                 self.render_geoms_xform[e].set_translation(*entity.state.p_pos)
@@ -403,8 +427,8 @@ class MultiAgentEnv(gym.Env):
                                 color, color, color)
 
             # render to display or array
-            results.append(self.viewers[i].render(
-                return_rgb_array=mode == 'rgb_array'))
+            results.append(
+                self.viewers[i].render(return_rgb_array=mode == 'rgb_array'))
 
         return results
 
@@ -419,7 +443,8 @@ class MultiAgentEnv(gym.Env):
             for angle in np.linspace(-np.pi, +np.pi, 8, endpoint=False):
                 for distance in np.linspace(range_min, range_max, 3):
                     dx.append(
-                        distance * np.array([np.cos(angle), np.sin(angle)]))
+                        distance *
+                        np.array([np.cos(angle), np.sin(angle)]))
             # add origin
             dx.append(np.array([0.0, 0.0]))
         # grid receptive field
