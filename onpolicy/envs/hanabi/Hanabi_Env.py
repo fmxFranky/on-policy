@@ -29,17 +29,17 @@ MOVE_TYPES = [_.name for _ in pyhanabi.HanabiMoveType]
 
 
 class Environment(object):
-    """Abstract Environment interface.
+  """Abstract Environment interface.
 
     All concrete implementations of an environment should derive from this
     interface and implement the method stubs.
     """
 
-    def seed(self, seed):
-        raise NotImplementedError("Not implemented in Abstract Base class")
+  def seed(self, seed):
+    raise NotImplementedError("Not implemented in Abstract Base class")
 
-    def reset(self, config):
-        r"""Reset the environment with a new config.
+  def reset(self, config):
+    r"""Reset the environment with a new config.
 
         Signals environment handlers to reset and restart the environment using
         a config dict.
@@ -51,10 +51,10 @@ class Environment(object):
         Returns:
           observation: A dict containing the full observation state.
         """
-        raise NotImplementedError("Not implemented in Abstract Base class")
+    raise NotImplementedError("Not implemented in Abstract Base class")
 
-    def step(self, action):
-        """Take one step in the game.
+  def step(self, action):
+    """Take one step in the game.
 
         Args:
           action: dict, mapping to an action taken by an agent.
@@ -68,19 +68,19 @@ class Environment(object):
         Raises:
           AssertionError: When an illegal action is provided.
         """
-        raise NotImplementedError("Not implemented in Abstract Base class")
+    raise NotImplementedError("Not implemented in Abstract Base class")
 
-    def close(self):
-        """Take one step in the game.
+  def close(self):
+    """Take one step in the game.
 
         Raises:
           AssertionError: abnormal close.
         """
-        raise NotImplementedError("Not implemented in Abstract Base class")
+    raise NotImplementedError("Not implemented in Abstract Base class")
 
 
 class HanabiEnv(Environment):
-    """RL interface to a Hanabi environment.
+  """RL interface to a Hanabi environment.
 
     ```python
 
@@ -95,8 +95,8 @@ class HanabiEnv(Environment):
     ```
     """
 
-    def __init__(self, args, seed):
-        r"""Creates an environment with the given game configuration.
+  def __init__(self, args, seed):
+    r"""Creates an environment with the given game configuration.
 
         Args:
           config: dict, With parameters for the game. Config takes the following
@@ -113,104 +113,104 @@ class HanabiEnv(Environment):
               - seed: int, Random seed.
               - random_start_player: bool, Random start player.
         """
-        self._seed = seed
-        # max:action 48 obs=1380 min:action=20 obs=783 score=25
-        if (args.hanabi_name == "Hanabi-Full" or
-                args.hanabi_name == "Hanabi-Full-CardKnowledge"):
-            config = {
-                "colors":
-                    5,
-                "ranks":
-                    5,
-                "players":
-                    args.num_agents,
-                "max_information_tokens":
-                    8,
-                "max_life_tokens":
-                    3,
-                "observation_type":
-                    pyhanabi.AgentObservationType.CARD_KNOWLEDGE.value,
-                "seed":
-                    self._seed
-            }
-        # max:action 48 obs=680 min:action=20 obs=433 score=25 use memory
-        elif args.hanabi_name == "Hanabi-Full-Minimal":
-            config = {
-                "colors": 5,
-                "ranks": 5,
-                "players": args.num_agents,
-                "max_information_tokens": 8,
-                "max_life_tokens": 3,
-                "observation_type": pyhanabi.AgentObservationType.MINIMAL.value,
-                "seed": self._seed
-            }
-        elif args.hanabi_name == "Hanabi-Small":  # max:action=32 obs=356 min:action=11 obs=191 score=10
-            config = {
-                "colors":
-                    2,
-                "ranks":
-                    5,
-                "players":
-                    args.num_agents,
-                "hand_size":
-                    2,
-                "max_information_tokens":
-                    3,
-                "max_life_tokens":
-                    1,
-                "observation_type":
-                    pyhanabi.AgentObservationType.CARD_KNOWLEDGE.value,
-                "seed":
-                    self._seed
-            }
-        elif args.hanabi_name == "Hanabi-Very-Small":  # max:action=28 obs=215 min:action=10 obs=116 score=5
-            config = {
-                "colors":
-                    1,
-                "ranks":
-                    5,
-                "players":
-                    args.num_agents,
-                "hand_size":
-                    2,
-                "max_information_tokens":
-                    3,
-                "max_life_tokens":
-                    1,
-                "observation_type":
-                    pyhanabi.AgentObservationType.CARD_KNOWLEDGE.value,
-                "seed":
-                    self._seed
-            }
-        else:
-            raise ValueError("Unknown environment {}".format(args.hanabi_name))
+    self._seed = seed
+    # max:action 48 obs=1380 min:action=20 obs=783 score=25
+    if (args.hanabi_name == "Hanabi-Full" or
+        args.hanabi_name == "Hanabi-Full-CardKnowledge"):
+      config = {
+          "colors":
+              5,
+          "ranks":
+              5,
+          "players":
+              args.num_agents,
+          "max_information_tokens":
+              8,
+          "max_life_tokens":
+              3,
+          "observation_type":
+              pyhanabi.AgentObservationType.CARD_KNOWLEDGE.value,
+          "seed":
+              self._seed
+      }
+    # max:action 48 obs=680 min:action=20 obs=433 score=25 use memory
+    elif args.hanabi_name == "Hanabi-Full-Minimal":
+      config = {
+          "colors": 5,
+          "ranks": 5,
+          "players": args.num_agents,
+          "max_information_tokens": 8,
+          "max_life_tokens": 3,
+          "observation_type": pyhanabi.AgentObservationType.MINIMAL.value,
+          "seed": self._seed
+      }
+    elif args.hanabi_name == "Hanabi-Small":  # max:action=32 obs=356 min:action=11 obs=191 score=10
+      config = {
+          "colors":
+              2,
+          "ranks":
+              5,
+          "players":
+              args.num_agents,
+          "hand_size":
+              2,
+          "max_information_tokens":
+              3,
+          "max_life_tokens":
+              1,
+          "observation_type":
+              pyhanabi.AgentObservationType.CARD_KNOWLEDGE.value,
+          "seed":
+              self._seed
+      }
+    elif args.hanabi_name == "Hanabi-Very-Small":  # max:action=28 obs=215 min:action=10 obs=116 score=5
+      config = {
+          "colors":
+              1,
+          "ranks":
+              5,
+          "players":
+              args.num_agents,
+          "hand_size":
+              2,
+          "max_information_tokens":
+              3,
+          "max_life_tokens":
+              1,
+          "observation_type":
+              pyhanabi.AgentObservationType.CARD_KNOWLEDGE.value,
+          "seed":
+              self._seed
+      }
+    else:
+      raise ValueError("Unknown environment {}".format(args.hanabi_name))
 
-        assert isinstance(config, dict), "Expected config to be of type dict."
+    assert isinstance(config, dict), "Expected config to be of type dict."
 
-        self.game = pyhanabi.HanabiGame(config)
-        self.obs_instead_of_state = args.use_obs_instead_of_state
+    self.game = pyhanabi.HanabiGame(config)
+    self.obs_instead_of_state = args.use_obs_instead_of_state
 
-        self.observation_encoder = pyhanabi.ObservationEncoder(
-            self.game, pyhanabi.ObservationEncoderType.CANONICAL)
-        self.players = self.game.num_players()
-        self.action_space = []
-        self.observation_space = []
-        self.share_observation_space = []
-        for i in range(self.players):
-            self.action_space.append(Discrete(self.num_moves()))
-            self.observation_space.append(
-                [self.vectorized_observation_shape()[0] + self.players])
-            self.share_observation_space.append(
-                [self.vectorized_share_observation_shape()[0] + self.players])
+    self.observation_encoder = pyhanabi.ObservationEncoder(
+        self.game, pyhanabi.ObservationEncoderType.CANONICAL)
+    self.players = self.game.num_players()
+    self.action_space = []
+    self.observation_space = []
+    self.share_observation_space = []
+    for i in range(self.players):
+      self.action_space.append(Discrete(self.num_moves()))
+      self.observation_space.append(
+          [self.vectorized_observation_shape()[0] + self.players])
+      self.share_observation_space.append(
+          [self.vectorized_share_observation_shape()[0] + self.players])
 
-    def seed(self, seed=None):
-        if seed is None:
-            np.random.seed(1)
-        else:
-            np.random.seed(seed)
+  def seed(self, seed=None):
+    if seed is None:
+      np.random.seed(1)
+    else:
+      np.random.seed(seed)
 
-    def reset(self, choose=True):
-        """Resets the environment for a new game.
+  def reset(self, choose=True):
+    """Resets the environment for a new game.
 
         Returns:
           observation: dict, containing the full observation about the game at the
@@ -309,79 +309,77 @@ class HanabiEnv(Environment):
                                       'num_players': 2,
                                       'vectorized': [ 0, 0, 1, ... ]}]}
         """
-        if choose:
-            self.state = self.game.new_initial_state()
+    if choose:
+      self.state = self.game.new_initial_state()
 
-            while self.state.cur_player() == pyhanabi.CHANCE_PLAYER_ID:
-                self.state.deal_random_card()
+      while self.state.cur_player() == pyhanabi.CHANCE_PLAYER_ID:
+        self.state.deal_random_card()
 
-            observation = self._make_observation_all_players()
-            current_player = self.state.cur_player()
-            observation["current_player"] = current_player
-            player_observations = observation['player_observations']
+      observation = self._make_observation_all_players()
+      current_player = self.state.cur_player()
+      observation["current_player"] = current_player
+      player_observations = observation['player_observations']
 
-            agent_turn = np.zeros(self.players, dtype=np.int).tolist()
-            agent_turn[current_player] = 1
+      agent_turn = np.zeros(self.players, dtype=np.int).tolist()
+      agent_turn[current_player] = 1
 
-            available_actions = np.zeros(self.num_moves())
-            available_actions[player_observations[current_player]
-                              ['legal_moves_as_int']] = 1.0
+      available_actions = np.zeros(self.num_moves())
+      available_actions[player_observations[current_player]
+                        ['legal_moves_as_int']] = 1.0
 
-            obs = player_observations[current_player]['vectorized'] + agent_turn
-            if self.obs_instead_of_state:
-                share_obs = [
-                    player_observations[i]['vectorized']
-                    for i in range(self.players)
-                ]
-                concat_obs = np.concatenate(share_obs, axis=0)
-                share_obs = np.concatenate((concat_obs, agent_turn), axis=0)
-            else:
-                share_obs = player_observations[current_player][
-                    'vectorized_ownhand'] + player_observations[current_player][
-                        'vectorized'] + agent_turn
-        else:
-            obs = np.zeros(self.vectorized_observation_shape()[0] +
+      obs = player_observations[current_player]['vectorized'] + agent_turn
+      if self.obs_instead_of_state:
+        share_obs = [
+            player_observations[i]['vectorized'] for i in range(self.players)
+        ]
+        concat_obs = np.concatenate(share_obs, axis=0)
+        share_obs = np.concatenate((concat_obs, agent_turn), axis=0)
+      else:
+        share_obs = player_observations[current_player][
+            'vectorized_ownhand'] + player_observations[current_player][
+                'vectorized'] + agent_turn
+    else:
+      obs = np.zeros(self.vectorized_observation_shape()[0] + self.players)
+      share_obs = np.zeros(self.vectorized_share_observation_shape()[0] +
                            self.players)
-            share_obs = np.zeros(self.vectorized_share_observation_shape()[0] +
-                                 self.players)
-            available_actions = np.zeros(self.num_moves())
-        return obs, share_obs, available_actions
+      available_actions = np.zeros(self.num_moves())
+    return obs, share_obs, available_actions
 
-    def close(self):
-        pass
+  def close(self):
+    pass
 
-    def vectorized_observation_shape(self):
-        """Returns the shape of the vectorized observation.
+  def vectorized_observation_shape(self):
+    """Returns the shape of the vectorized observation.
 
         Returns:
           A list of integer dimensions describing the observation shape.
         """
-        return self.observation_encoder.shape()
+    return self.observation_encoder.shape()
 
-    def vectorized_share_observation_shape(self):
-        """Returns the shape of the vectorized observation.
+  def vectorized_share_observation_shape(self):
+    """Returns the shape of the vectorized observation.
 
         Returns:
           A list of integer dimensions describing the observation shape.
         """
-        if self.obs_instead_of_state:
-            return [self.observation_encoder.shape()[0] * self.players]
-        else:
-            return [
-                self.observation_encoder.ownhandshape()[0] +
-                self.observation_encoder.shape()[0]
-            ]
+    if self.obs_instead_of_state:
+      return [self.observation_encoder.shape()[0] * self.players]
+    else:
+      return [
+          self.observation_encoder.ownhandshape()[0] +
+          self.observation_encoder.shape()[0]
+      ]
 
-    def num_moves(self):
-        """Returns the total number of moves in this game (legal or not).
+  def num_moves(self):
+    """Returns the total number of moves in this game (legal or not).
 
         Returns:
           Integer, number of moves.
         """
-        return self.game.max_moves()
+    return self.game.max_moves()
 
-    def step(self, action):
-        """Take one step in the game.
+  def step(self, action):
+    """Take one step in the game.
 
         Args:
           action: dict, mapping to a legal action taken by an agent. The following
@@ -488,84 +486,81 @@ class HanabiEnv(Environment):
         Raises:
           AssertionError: When an illegal action is provided.
         """
-        action = int(action[0])
-        if isinstance(action, dict):
-            # Convert dict action HanabiMove
-            action = self._build_move(action)
-        elif isinstance(action, int):
-            if action == -1:  # invalid action
-                obs = np.zeros(self.vectorized_observation_shape()[0] +
-                               self.players)
-                share_obs = np.zeros(
-                    self.vectorized_share_observation_shape()[0] + self.players)
-                rewards = np.zeros((self.players, 1))
-                done = None
-                infos = {'score': self.state.score()}
-                available_actions = np.zeros(self.num_moves())
-                return obs, share_obs, rewards, done, infos, available_actions
-            # Convert int action into a Hanabi move.
-            action = self.game.get_move(action)
-        else:
-            raise ValueError(
-                "Expected action as dict or int, got: {}".format(action))
-
-        last_score = self.state.score()
-        # Apply the action to the state.
-        self.state.apply_move(action)
-
-        while self.state.cur_player() == pyhanabi.CHANCE_PLAYER_ID:
-            self.state.deal_random_card()
-
-        observation = self._make_observation_all_players()
-        current_player = self.state.cur_player()
-        player_observations = observation['player_observations']
-
-        available_actions = np.zeros(self.num_moves())
-        available_actions[player_observations[current_player]
-                          ['legal_moves_as_int']] = 1.0
-
-        agent_turn = np.zeros(self.players, dtype=np.int).tolist()
-        agent_turn[current_player] = 1
-
-        obs = player_observations[current_player]['vectorized'] + agent_turn
-        if self.obs_instead_of_state:
-            share_obs = [
-                player_observations[i]['vectorized']
-                for i in range(self.players)
-            ]
-            concat_obs = np.concatenate(share_obs, axis=0)
-            share_obs = np.concatenate((concat_obs, agent_turn), axis=0)
-        else:
-            share_obs = player_observations[current_player][
-                'vectorized_ownhand'] + player_observations[current_player][
-                    'vectorized'] + agent_turn
-
-        done = self.state.is_terminal()
-        # Reward is score differential. May be large and negative at game end.
-        reward = self.state.score() - last_score
-        rewards = [[reward]] * self.players
+    action = int(action[0])
+    if isinstance(action, dict):
+      # Convert dict action HanabiMove
+      action = self._build_move(action)
+    elif isinstance(action, int):
+      if action == -1:  # invalid action
+        obs = np.zeros(self.vectorized_observation_shape()[0] + self.players)
+        share_obs = np.zeros(self.vectorized_share_observation_shape()[0] +
+                             self.players)
+        rewards = np.zeros((self.players, 1))
+        done = None
         infos = {'score': self.state.score()}
-
+        available_actions = np.zeros(self.num_moves())
         return obs, share_obs, rewards, done, infos, available_actions
+      # Convert int action into a Hanabi move.
+      action = self.game.get_move(action)
+    else:
+      raise ValueError("Expected action as dict or int, got: {}".format(action))
 
-    def _make_observation_all_players(self):
-        """Make observation for all players.
+    last_score = self.state.score()
+    # Apply the action to the state.
+    self.state.apply_move(action)
+
+    while self.state.cur_player() == pyhanabi.CHANCE_PLAYER_ID:
+      self.state.deal_random_card()
+
+    observation = self._make_observation_all_players()
+    current_player = self.state.cur_player()
+    player_observations = observation['player_observations']
+
+    available_actions = np.zeros(self.num_moves())
+    available_actions[player_observations[current_player]
+                      ['legal_moves_as_int']] = 1.0
+
+    agent_turn = np.zeros(self.players, dtype=np.int).tolist()
+    agent_turn[current_player] = 1
+
+    obs = player_observations[current_player]['vectorized'] + agent_turn
+    if self.obs_instead_of_state:
+      share_obs = [
+          player_observations[i]['vectorized'] for i in range(self.players)
+      ]
+      concat_obs = np.concatenate(share_obs, axis=0)
+      share_obs = np.concatenate((concat_obs, agent_turn), axis=0)
+    else:
+      share_obs = player_observations[current_player][
+          'vectorized_ownhand'] + player_observations[current_player][
+              'vectorized'] + agent_turn
+
+    done = self.state.is_terminal()
+    # Reward is score differential. May be large and negative at game end.
+    reward = self.state.score() - last_score
+    rewards = [[reward]] * self.players
+    infos = {'score': self.state.score()}
+
+    return obs, share_obs, rewards, done, infos, available_actions
+
+  def _make_observation_all_players(self):
+    """Make observation for all players.
 
         Returns:
           dict, containing observations for all players.
         """
-        obs = {}
-        player_observations = [
-            self._extract_dict_from_backend(player_id,
-                                            self.state.observation(player_id))
-            for player_id in range(self.players)
-        ]  # pylint: disable=bad-continuation
-        obs["player_observations"] = player_observations
-        obs["current_player"] = self.state.cur_player()
-        return obs
+    obs = {}
+    player_observations = [
+        self._extract_dict_from_backend(player_id,
+                                        self.state.observation(player_id))
+        for player_id in range(self.players)
+    ]  # pylint: disable=bad-continuation
+    obs["player_observations"] = player_observations
+    obs["current_player"] = self.state.cur_player()
+    return obs
 
-    def _extract_dict_from_backend(self, player_id, observation):
-        """Extract a dict of features from an observation from the backend.
+  def _extract_dict_from_backend(self, player_id, observation):
+    """Extract a dict of features from an observation from the backend.
 
         Args:
           player_id: Int, player from whose perspective we generate the observation.
@@ -574,58 +569,58 @@ class HanabiEnv(Environment):
         Returns:
           obs_dict: dict, mapping from HanabiObservation to a dict.
         """
-        obs_dict = {}
-        obs_dict["current_player"] = self.state.cur_player()
-        obs_dict["current_player_offset"] = observation.cur_player_offset()
-        obs_dict["life_tokens"] = observation.life_tokens()
-        obs_dict["information_tokens"] = observation.information_tokens()
-        obs_dict["num_players"] = observation.num_players()
-        obs_dict["deck_size"] = observation.deck_size()
+    obs_dict = {}
+    obs_dict["current_player"] = self.state.cur_player()
+    obs_dict["current_player_offset"] = observation.cur_player_offset()
+    obs_dict["life_tokens"] = observation.life_tokens()
+    obs_dict["information_tokens"] = observation.information_tokens()
+    obs_dict["num_players"] = observation.num_players()
+    obs_dict["deck_size"] = observation.deck_size()
 
-        obs_dict["fireworks"] = {}
-        fireworks = self.state.fireworks()
-        for color, firework in zip(pyhanabi.COLOR_CHAR, fireworks):
-            obs_dict["fireworks"][color] = firework
+    obs_dict["fireworks"] = {}
+    fireworks = self.state.fireworks()
+    for color, firework in zip(pyhanabi.COLOR_CHAR, fireworks):
+      obs_dict["fireworks"][color] = firework
 
-        obs_dict["legal_moves"] = []
-        obs_dict["legal_moves_as_int"] = []
-        for move in observation.legal_moves():
-            obs_dict["legal_moves"].append(move.to_dict())
-            obs_dict["legal_moves_as_int"].append(self.game.get_move_uid(move))
+    obs_dict["legal_moves"] = []
+    obs_dict["legal_moves_as_int"] = []
+    for move in observation.legal_moves():
+      obs_dict["legal_moves"].append(move.to_dict())
+      obs_dict["legal_moves_as_int"].append(self.game.get_move_uid(move))
 
-        obs_dict["observed_hands"] = []
-        for player_hand in observation.observed_hands():
-            cards = [card.to_dict() for card in player_hand]
-            obs_dict["observed_hands"].append(cards)
+    obs_dict["observed_hands"] = []
+    for player_hand in observation.observed_hands():
+      cards = [card.to_dict() for card in player_hand]
+      obs_dict["observed_hands"].append(cards)
 
-        obs_dict["discard_pile"] = [
-            card.to_dict() for card in observation.discard_pile()
-        ]
+    obs_dict["discard_pile"] = [
+        card.to_dict() for card in observation.discard_pile()
+    ]
 
-        # Return hints received.
-        obs_dict["card_knowledge"] = []
-        for player_hints in observation.card_knowledge():
-            player_hints_as_dicts = []
-            for hint in player_hints:
-                hint_d = {}
-                if hint.color() is not None:
-                    hint_d["color"] = pyhanabi.color_idx_to_char(hint.color())
-                else:
-                    hint_d["color"] = None
-                hint_d["rank"] = hint.rank()
-                player_hints_as_dicts.append(hint_d)
-            obs_dict["card_knowledge"].append(player_hints_as_dicts)
+    # Return hints received.
+    obs_dict["card_knowledge"] = []
+    for player_hints in observation.card_knowledge():
+      player_hints_as_dicts = []
+      for hint in player_hints:
+        hint_d = {}
+        if hint.color() is not None:
+          hint_d["color"] = pyhanabi.color_idx_to_char(hint.color())
+        else:
+          hint_d["color"] = None
+        hint_d["rank"] = hint.rank()
+        player_hints_as_dicts.append(hint_d)
+      obs_dict["card_knowledge"].append(player_hints_as_dicts)
 
-        # ipdb.set_trace()
-        obs_dict["vectorized"] = self.observation_encoder.encode(observation)
-        obs_dict["vectorized_ownhand"] = self.observation_encoder.encodeownhand(
-            observation)
-        obs_dict["pyhanabi"] = observation
+    # ipdb.set_trace()
+    obs_dict["vectorized"] = self.observation_encoder.encode(observation)
+    obs_dict["vectorized_ownhand"] = self.observation_encoder.encodeownhand(
+        observation)
+    obs_dict["pyhanabi"] = observation
 
-        return obs_dict
+    return obs_dict
 
-    def _build_move(self, action):
-        """Build a move from an action dict.
+  def _build_move(self, action):
+    """Build a move from an action dict.
 
         Args:
           action: dict, mapping to a legal action taken by an agent. The following
@@ -649,44 +644,45 @@ class HanabiEnv(Environment):
         Raises:
           ValueError: Unknown action type.
         """
-        assert isinstance(action, dict), "Expected dict, got: {}".format(action)
-        assert "action_type" in action, ("Action should contain `action_type`. "
-                                         "action: {}").format(action)
-        action_type = action["action_type"]
-        assert (action_type
-                in MOVE_TYPES), ("action_type: {} should be one of: {}".format(
-                    action_type, MOVE_TYPES))
+    assert isinstance(action, dict), "Expected dict, got: {}".format(action)
+    assert "action_type" in action, ("Action should contain `action_type`. "
+                                     "action: {}").format(action)
+    action_type = action["action_type"]
+    assert (action_type
+            in MOVE_TYPES), ("action_type: {} should be one of: {}".format(
+                action_type, MOVE_TYPES))
 
-        if action_type == "PLAY":
-            card_index = action["card_index"]
-            move = pyhanabi.HanabiMove.get_play_move(card_index=card_index)
-        elif action_type == "DISCARD":
-            card_index = action["card_index"]
-            move = pyhanabi.HanabiMove.get_discard_move(card_index=card_index)
-        elif action_type == "REVEAL_RANK":
-            target_offset = action["target_offset"]
-            rank = action["rank"]
-            move = pyhanabi.HanabiMove.get_reveal_rank_move(
-                target_offset=target_offset, rank=rank)
-        elif action_type == "REVEAL_COLOR":
-            target_offset = action["target_offset"]
-            assert isinstance(action["color"], str)
-            color = color_char_to_idx(action["color"])
-            move = pyhanabi.HanabiMove.get_reveal_color_move(
-                target_offset=target_offset, color=color)
-        else:
-            raise ValueError("Unknown action_type: {}".format(action_type))
+    if action_type == "PLAY":
+      card_index = action["card_index"]
+      move = pyhanabi.HanabiMove.get_play_move(card_index=card_index)
+    elif action_type == "DISCARD":
+      card_index = action["card_index"]
+      move = pyhanabi.HanabiMove.get_discard_move(card_index=card_index)
+    elif action_type == "REVEAL_RANK":
+      target_offset = action["target_offset"]
+      rank = action["rank"]
+      move = pyhanabi.HanabiMove.get_reveal_rank_move(
+          target_offset=target_offset, rank=rank)
+    elif action_type == "REVEAL_COLOR":
+      target_offset = action["target_offset"]
+      assert isinstance(action["color"], str)
+      color = color_char_to_idx(action["color"])
+      move = pyhanabi.HanabiMove.get_reveal_color_move(
+          target_offset=target_offset, color=color)
+    else:
+      raise ValueError("Unknown action_type: {}".format(action_type))
 
-        legal_moves = self.state.legal_moves()
-        assert (str(move) in map(str, legal_moves)
-               ), "Illegal action: {}. Move should be one of : {}".format(
-                   move, legal_moves)
+    legal_moves = self.state.legal_moves()
+    assert (str(move) in map(
+        str,
+        legal_moves)), "Illegal action: {}. Move should be one of : {}".format(
+            move, legal_moves)
 
-        return move
+    return move
 
 
 def make(environment_name="Hanabi-Full", num_players=2, pyhanabi_path=None):
-    """Make an environment.
+  """Make an environment.
 
     Args:
       environment_name: str, Name of the environment to instantiate.
@@ -700,76 +696,76 @@ def make(environment_name="Hanabi-Full", num_players=2, pyhanabi_path=None):
       ValueError: Unknown environment name.
     """
 
-    if pyhanabi_path is not None:
-        prefixes = (pyhanabi_path,)
-        assert pyhanabi.try_cdef(prefixes=prefixes), "cdef failed to load"
-        assert pyhanabi.try_load(prefixes=prefixes), "library failed to load"
+  if pyhanabi_path is not None:
+    prefixes = (pyhanabi_path,)
+    assert pyhanabi.try_cdef(prefixes=prefixes), "cdef failed to load"
+    assert pyhanabi.try_load(prefixes=prefixes), "library failed to load"
 
-    if (environment_name == "Hanabi-Full" or
-            environment_name == "Hanabi-Full-CardKnowledge"):
-        return HanabiEnv(
-            config={
-                "colors":
-                    5,
-                "ranks":
-                    5,
-                "players":
-                    num_players,
-                "max_information_tokens":
-                    8,
-                "max_life_tokens":
-                    3,
-                "observation_type":
-                    pyhanabi.AgentObservationType.CARD_KNOWLEDGE.value
-            })
-    elif environment_name == "Hanabi-Full-Minimal":
-        return HanabiEnv(
-            config={
-                "colors": 5,
-                "ranks": 5,
-                "players": num_players,
-                "max_information_tokens": 8,
-                "max_life_tokens": 3,
-                "observation_type": pyhanabi.AgentObservationType.MINIMAL.value
-            })
-    elif environment_name == "Hanabi-Small":
-        return HanabiEnv(
-            config={
-                "colors":
-                    2,
-                "ranks":
-                    5,
-                "players":
-                    num_players,
-                "hand_size":
-                    2,
-                "max_information_tokens":
-                    3,
-                "max_life_tokens":
-                    1,
-                "observation_type":
-                    pyhanabi.AgentObservationType.CARD_KNOWLEDGE.value
-            })
-    elif environment_name == "Hanabi-Very-Small":
-        return HanabiEnv(
-            config={
-                "colors":
-                    1,
-                "ranks":
-                    5,
-                "players":
-                    num_players,
-                "hand_size":
-                    2,
-                "max_information_tokens":
-                    3,
-                "max_life_tokens":
-                    1,
-                "observation_type":
-                    pyhanabi.AgentObservationType.CARD_KNOWLEDGE.value
-            })
-    else:
-        raise ValueError("Unknown environment {}".format(environment_name))
+  if (environment_name == "Hanabi-Full" or
+      environment_name == "Hanabi-Full-CardKnowledge"):
+    return HanabiEnv(
+        config={
+            "colors":
+                5,
+            "ranks":
+                5,
+            "players":
+                num_players,
+            "max_information_tokens":
+                8,
+            "max_life_tokens":
+                3,
+            "observation_type":
+                pyhanabi.AgentObservationType.CARD_KNOWLEDGE.value
+        })
+  elif environment_name == "Hanabi-Full-Minimal":
+    return HanabiEnv(
+        config={
+            "colors": 5,
+            "ranks": 5,
+            "players": num_players,
+            "max_information_tokens": 8,
+            "max_life_tokens": 3,
+            "observation_type": pyhanabi.AgentObservationType.MINIMAL.value
+        })
+  elif environment_name == "Hanabi-Small":
+    return HanabiEnv(
+        config={
+            "colors":
+                2,
+            "ranks":
+                5,
+            "players":
+                num_players,
+            "hand_size":
+                2,
+            "max_information_tokens":
+                3,
+            "max_life_tokens":
+                1,
+            "observation_type":
+                pyhanabi.AgentObservationType.CARD_KNOWLEDGE.value
+        })
+  elif environment_name == "Hanabi-Very-Small":
+    return HanabiEnv(
+        config={
+            "colors":
+                1,
+            "ranks":
+                5,
+            "players":
+                num_players,
+            "hand_size":
+                2,
+            "max_information_tokens":
+                3,
+            "max_life_tokens":
+                1,
+            "observation_type":
+                pyhanabi.AgentObservationType.CARD_KNOWLEDGE.value
+        })
+  else:
+    raise ValueError("Unknown environment {}".format(environment_name))
 
 
 # -------------------------------------------------------------------------------
@@ -778,7 +774,7 @@ def make(environment_name="Hanabi-Full", num_players=2, pyhanabi_path=None):
 
 
 class Agent(object):
-    """Agent interface.
+  """Agent interface.
 
     All concrete implementations of an Agent should derive from this interface
     and implement the method stubs.
@@ -802,8 +798,8 @@ class Agent(object):
     ```
     """
 
-    def __init__(self, config, *args, **kwargs):
-        r"""Initialize the agent.
+  def __init__(self, config, *args, **kwargs):
+    r"""Initialize the agent.
 
         Args:
           config: dict, With parameters for the game. Config takes the following
@@ -822,10 +818,10 @@ class Agent(object):
         Raises:
           AgentError: Custom exceptions.
         """
-        raise NotImplementedError("Not implemeneted in abstract base class.")
+    raise NotImplementedError("Not implemeneted in abstract base class.")
 
-    def reset(self, config):
-        r"""Reset the agent with a new config.
+  def reset(self, config):
+    r"""Reset the agent with a new config.
 
         Signals agent to reset and restart using a config dict.
 
@@ -841,10 +837,10 @@ class Agent(object):
               - seed: int, Random seed.
               - random_start_player: bool, Random start player.
         """
-        raise NotImplementedError("Not implemeneted in abstract base class.")
+    raise NotImplementedError("Not implemeneted in abstract base class.")
 
-    def act(self, observation):
-        """Act based on an observation.
+  def act(self, observation):
+    """Act based on an observation.
 
         Args:
           observation: dict, containing observation from the view of this agent.
@@ -889,4 +885,4 @@ class Agent(object):
                   'target_offset': int >=0
                 }
         """
-        raise NotImplementedError("Not implemented in Abstract Base class")
+    raise NotImplementedError("Not implemented in Abstract Base class")

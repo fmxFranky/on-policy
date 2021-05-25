@@ -4,11 +4,11 @@ from pysc2.maps import lib
 
 
 class SMACMap(lib.Map):
-    directory = "SMAC_Maps"
-    download = "https://github.com/oxwhirl/smac#smac-maps"
-    players = 2
-    step_mul = 8
-    game_steps_per_episode = 0
+  directory = "SMAC_Maps"
+  download = "https://github.com/oxwhirl/smac#smac-maps"
+  players = 2
+  step_mul = 8
+  game_steps_per_episode = 0
 
 
 map_param_registry = {
@@ -441,13 +441,13 @@ map_param_registry = {
 
 
 def get_smac_map_registry():
-    return map_param_registry
+  return map_param_registry
 
 
 for name in map_param_registry.keys():
-    globals()[name] = type(name, (SMACMap,), dict(filename=name))
+  globals()[name] = type(name, (SMACMap,), dict(filename=name))
 
 
 def get_map_params(map_name):
-    map_param_registry = get_smac_map_registry()
-    return map_param_registry[map_name]
+  map_param_registry = get_smac_map_registry()
+  return map_param_registry[map_name]
