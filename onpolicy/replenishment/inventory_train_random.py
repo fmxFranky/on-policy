@@ -1,0 +1,92 @@
+import argparse
+import os
+import random
+import time
+from functools import partial
+
+import numpy as np
+import ray
+import ray.rllib.agents.ppo.ppo as ppo
+import ray.rllib.agents.qmix.qmix as qmix
+import ray.rllib.agents.trainer_template as tt
+import ray.rllib.env.multi_agent_env
+import ray.rllib.models as models
+import tensorflow as tf
+from env.inventory_env import InventoryManageEnv
+from env.inventory_utils import Utils
+from gym.spaces import Box, Discrete, MultiDiscrete, Tuple
+from ray import tune
+from ray.rllib.agents.ppo.ppo_tf_policy import PPOTFPolicy
+from ray.rllib.agents.ppo.ppo_torch_policy import PPOTorchPolicy
+from ray.rllib.agents.qmix.qmix_policy import QMixTorchPolicy
+from ray.rllib.evaluation.postprocessing import (Postprocessing,
+                                                 compute_advantages)
+from ray.rllib.models import ModelCatalog
+from ray.rllib.models.tf.tf_action_dist import MultiCategorical
+from ray.rllib.policy.sample_batch import SampleBatch
+from ray.rllib.policy.tf_policy_template import build_tf_policy
+from ray.rllib.utils import try_import_tf, try_import_torch
+from ray.tune.logger import pretty_print
+from render.inventory_renderer import AsciiWorldRenderer
+from scheduler.inventory_random_policy import (BaselinePolicy,
+                                               ConsumerBaselinePolicy,
+                                               ProducerBaselinePolicy)
+from scheduler.inventory_tf_model import FacilityNet
+from tqdm import tqdm as tqdm
+from utility.tools import SimulationTracker
+
+from config.inventory_config import env_config
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--run", type=str, default="PPO")
+parser.add_argument("--num-cpus", type=int, default=0)
+parser.add_argument("--torch", action="store_true")
+parser.add_argument("--baseline", action="store_true")
+parser.add_argument("--episod", type=int, default=60)
+parser.add_argument("--as-test", action="store_true")
+parser.add_argument("--use-prev-action-reward", action="store_true")
+parser.add_argument("--stop-iters", type=int, default=20)
+parser.add_argument("--stop-timesteps", type=int, default=100000)
+parser.add_argument("--stop-reward", type=float, default=150.0)
+parser.add_argument("--pt", type=int, default=0)
+
+if __name__ == "__main__":
+  args = parser.parse_args()
+  ray.init()
+
+  env_config_for_rendering = env_config.copy()
+  episod_duration = args.episod
+  env_config_for_rendering['episod_duration'] = episod_duration
+  env = InventoryManageEnv(env_config_for_rendering)
+
+  policy_mode = "random"
+  # Create the environment
+  env.set_iteration(1, 1)
+  print(
+      f"Environment: Producer action space {env.action_space_producer}, Consumer action space {env.action_space_consumer}, Observation space {env.observation_space}"
+  )
+
+  def load_policy(agent_id):
+    if Utils.is_producer_agent(agent_id):
+      return ProducerBaselinePolicy(env.observation_space,
+                                    env.action_space_producer,
+                                    BaselinePolicy.get_config_from_env(env))
+    elif Utils.is_consumer_agent(agent_id):
+      return ConsumerBaselinePolicy(env.observation_space,
+                                    env.action_space_consumer,
+                                    BaselinePolicy.get_config_from_env(env))
+    else:
+      raise Exception(f'Unknown agent type {agent_id}')
+
+  policies = {}
+  for agent_id in env.agent_ids():
+    policies[agent_id] = load_policy(agent_id)
+
+  # Simulation loop
+  tracker = SimulationTracker(episod_duration, 1, env, policies)
+
+  if args.pt:
+    loc_path = f"{os.environ['PT_OUTPUT_DIR']}/{policy_mode}/"
+  else:
+    loc_path = 'output/%s/' % policy_mode
+  tracker.run_and_render(loc_path)
